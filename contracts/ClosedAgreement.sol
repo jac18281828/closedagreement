@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography";
+
 /**
  * @notice Implement a closed agreement between two parties.
  * The agent and the counter party show there concent to the agreement by
@@ -22,6 +24,8 @@ contract ClosedAgreement {
 
     function createAgreement(
         bytes32 _agreementMessageHash,
+        address _counte
+        rparty,
         string memory _cipherText,
         string memory _agentSignature,
         string memory _counterpartySignature
