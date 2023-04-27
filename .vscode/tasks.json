@@ -1,0 +1,81 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "install",
+      "type": "shell",
+      "command": "yarn install --dev",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "label": "prettier",
+      "type": "shell",
+      "command": "yarn prettier:check",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "install",
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "label": "hint",
+      "type": "shell",
+      "command": "yarn hint",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "prettier",
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "forge build --sizes",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "forge test -vvv",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "hint",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "deploy",
+      "type": "shell",
+      "command": "forge script ./script/ClosedAgreement.s.sol --sig 'deploy()' --slow --broadcast --resume --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "test",
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    }
+  ]
+}
