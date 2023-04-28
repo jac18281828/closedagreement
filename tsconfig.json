@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "lib": [
+        "esnext"
+      ],
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "outDir": "./dist",
+      "esModuleInterop": true,
+      "allowJs": true,
+      "resolveJsonModule": true,
+      "sourceMap": true,
+      "strict": true,
+      "rootDir": "src"
+    },
+    "include": [
+      "src/**/*.ts",
+    ]
+  }

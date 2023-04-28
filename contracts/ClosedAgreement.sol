@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.15;
 
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography";
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @notice Implement a closed agreement between two parties.
@@ -13,26 +13,40 @@ contract ClosedAgreement {
     event AgreementCreated(bytes32 messageHash, address agent, address counterparty);
     event AgreementRevealed(bytes32 messageHash, string indexed agreement, address revealingParty);
 
+    error AgreementExists(bytes32 messageHash);
+    error SignatureVerificationFailed(address expected, address found);
+
     struct Agreement {
         address agent;
-        address counter;
+        address counterParty;
         uint256 blockNumber;
-        string cipherText;
+        bytes cipherText;
     }
 
-    mapping(bytes32 => Agreement) private agreementLookup;
+    mapping(bytes32 => Agreement) private agreementMap;
 
     function createAgreement(
-        bytes32 _agreementMessageHash,
-        address _counte
-        rparty,
-        string memory _cipherText,
-        string memory _agentSignature,
-        string memory _counterpartySignature
-    ) external {}
+        bytes32 _agreementHash,
+        address _counterParty,
+        bytes memory _cipherText,
+        bytes memory _agentSignature,
+        bytes memory _counterpartySignature
+    ) external {
+        Agreement storage agreement = agreementMap[_agreementHash];
+        if(agreement.agent != address(0x0)) revert AgreementExists(_agreementHash);
+        address agentAddress = ECDSA.recover(_agreementHash, _agentSignature);
+        if(agentAddress != msg.sender) revert SignatureVerificationFailed(msg.sender, agentAddress);
+        address counterSignAddress = ECDSA.recover(_agreementHash, _counterpartySignature);
+        if(counterSignAddress != _counterParty) revert SignatureVerificationFailed(_counterParty, counterSignAddress);
+        agreement.agent = msg.sender;
+        agreement.counterParty = _counterParty;
+        agreement.blockNumber = block.number;
+        agreement.cipherText = _cipherText;
+        emit AgreementCreated(_agreementHash, agentAddress, _counterParty);
+    }
 
-    function getCipher(bytes32 _agreementHash) external view returns (string memory) {
-        Agreement memory agreement = agreementLookup[_agreementHash];
+    function getCipher(bytes32 _agreementHash) external view returns (bytes memory) {
+        Agreement memory agreement = agreementMap[_agreementHash];
         return agreement.cipherText;
     }
 
