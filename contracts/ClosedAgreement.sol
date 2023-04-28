@@ -14,7 +14,10 @@ contract ClosedAgreement {
     event AgreementRevealed(bytes32 messageHash, string indexed agreement, address revealingParty);
 
     error AgreementExists(bytes32 messageHash);
+    error NoSuchAgreement(bytes32 messageHash);
+    error AgreementNotMatched(bytes32 messageHash);
     error SignatureVerificationFailed(address expected, address found);
+    error NotParty(address sender);
 
     struct Agreement {
         address agent;
@@ -33,11 +36,11 @@ contract ClosedAgreement {
         bytes memory _counterpartySignature
     ) external {
         Agreement storage agreement = agreementMap[_agreementHash];
-        if(agreement.agent != address(0x0)) revert AgreementExists(_agreementHash);
+        if (agreement.agent != address(0x0)) revert AgreementExists(_agreementHash);
         address agentAddress = ECDSA.recover(_agreementHash, _agentSignature);
-        if(agentAddress != msg.sender) revert SignatureVerificationFailed(msg.sender, agentAddress);
+        if (agentAddress != msg.sender) revert SignatureVerificationFailed(msg.sender, agentAddress);
         address counterSignAddress = ECDSA.recover(_agreementHash, _counterpartySignature);
-        if(counterSignAddress != _counterParty) revert SignatureVerificationFailed(_counterParty, counterSignAddress);
+        if (counterSignAddress != _counterParty) revert SignatureVerificationFailed(_counterParty, counterSignAddress);
         agreement.agent = msg.sender;
         agreement.counterParty = _counterParty;
         agreement.blockNumber = block.number;
@@ -50,5 +53,21 @@ contract ClosedAgreement {
         return agreement.cipherText;
     }
 
-    function reveal(string memory plainText) external {}
+    function reveal(bytes32 _agreementHash, string memory plainText) external {
+        Agreement memory agreement = agreementMap[_agreementHash];
+        if (agreement.agent == address(0x0)) revert NoSuchAgreement(_agreementHash);
+        if (msg.sender != agreement.agent && msg.sender != agreement.counterParty) revert NotParty(msg.sender);
+
+        // check agreement alignment
+        bytes32 multipartyHash = keccak256(abi.encode(agreement.agent, agreement.counterParty, bytes(plainText).length, plainText));
+        bytes32 ethMsgHash = ECDSA.toEthSignedMessageHash(multipartyHash);
+        if (ethMsgHash != _agreementHash) revert AgreementNotMatched(multipartyHash);
+
+        // overwrite and erase agreement
+        agreementMap[_agreementHash] = Agreement(address(0x0), address(0x0), 0, "");
+        delete agreementMap[_agreementHash];
+
+        // reveal agreement
+        emit AgreementRevealed(_agreementHash, plainText, msg.sender);
+    }
 }

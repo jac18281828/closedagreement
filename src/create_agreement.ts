@@ -15,8 +15,9 @@ const run = async () => {
     const counterAccount = web3.eth.accounts.wallet.add(counterPrivateKey);
 
     const message = config.secret;
-    const ethMsgHash = toEthSignedMessage(web3, message);
+    const ethMsgHash = toEthSignedMessage(web3, config.agentAddress, config.counterAddress, message);
     const agentSignature = agentAccount.sign(ethMsgHash);
+    logger.info(`eth msg hash = ${ethMsgHash}`);
     logger.info(`agent hash: ${agentSignature.messageHash}`);
     logger.info(`agent signature: ${agentSignature.signature}`);
     const counterSignature = counterAccount.sign(ethMsgHash);
@@ -24,9 +25,11 @@ const run = async () => {
     logger.info(`counter party signature: ${counterSignature.signature}`);
 };
 
-function toEthSignedMessage(web3: Web3, message: string) {
-    const ethMsgHash = web3.eth.accounts.hashMessage(message);
-    return web3.utils.keccak256('\x19Ethereum Signed Message:\n32' + ethMsgHash)
+function toEthSignedMessage(web3: Web3, agent: string, counter: string, message: string) {
+    const multiPartyMsg = web3.eth.abi.encodeParameters(["address", "address", "uint256", "string"], [agent, counter, message.length, message]);
+    const partyHash = web3.utils.keccak256(multiPartyMsg);
+    logger.info(`multi party hash = ${partyHash}`);
+    return partyHash;
 }
 
 function getKeyAsEthereumKey(privateKey: string): string {
