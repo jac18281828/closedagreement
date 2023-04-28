@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Script.sol";
+import { Script } from "forge-std/Script.sol";
+
+import { ClosedAgreement } from "../contracts/ClosedAgreement.sol";
 
 contract CounterScript is Script {
-    function setUp() public {}
+
+    event ClosedAgreementCreated(address agreement);
 
     function upgrade() public {
         vm.broadcast();
+        ClosedAgreement agreement = new ClosedAgreement();
+        emit ClosedAgreementCreated(address(agreement));
     }
 }

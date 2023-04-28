@@ -77,6 +77,46 @@ contract ClosedAgreementTest is Test {
         agreement.reveal(MSG_HASH, AGREEMENT);
     }
 
+    function testCounterAgreementReveal() public {
+        vm.prank(AGENT_ADDRESS);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        vm.prank(COUNTER_ADDRESS);
+        agreement.reveal(MSG_HASH, AGREEMENT);
+    }
+
+    function testBadGuyMayNotReveal() public {
+        vm.prank(AGENT_ADDRESS);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.NotParty.selector, address(0x1234)));
+        vm.prank(address(0x1234));
+        agreement.reveal(MSG_HASH, AGREEMENT);
+    }
+
+    function testAgreementRequiredForReveal() public {
+        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.NoSuchAgreement.selector, MSG_HASH));
+        vm.prank(AGENT_ADDRESS);
+        agreement.reveal(MSG_HASH, AGREEMENT);
+    }
+
+    function testAgreementDeleted() public {
+        vm.prank(AGENT_ADDRESS);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        vm.prank(AGENT_ADDRESS);
+        agreement.reveal(MSG_HASH, AGREEMENT);
+        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.NoSuchAgreement.selector, MSG_HASH));
+        vm.prank(AGENT_ADDRESS);
+        agreement.reveal(MSG_HASH, AGREEMENT);
+    }
+
+    function testAgreementRevealRequiresSecret() public {
+        vm.prank(AGENT_ADDRESS);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        bytes32 expectHash = hex"e5bf9942845d800c8614c38763506dfa649e5fdf1541ddafdfed8956d85f80a2";
+        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.AgreementNotMatched.selector, expectHash));
+        vm.prank(COUNTER_ADDRESS);
+        agreement.reveal(MSG_HASH, "Not the agreement");
+    }
+
     function testHashAgreement() public {
         bytes32 exptHash = hex"b2cc7f42911d454a23e955705c1e8c73563284b935e563c828c065989906cf97";
         bytes32 partyHash = keccak256(abi.encode(AGENT_ADDRESS, COUNTER_ADDRESS, bytes(AGREEMENT).length, AGREEMENT));

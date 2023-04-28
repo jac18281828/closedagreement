@@ -16,7 +16,9 @@
         "prettier:fix": "prettier --write \"(contracts|test)/**.sol\"",
         "hint": "solhint contracts/**/*.sol test/**/*.sol",
         "test": "jest && forge test -vvv",
-        "clean": "forge clean && forge cache clean && rm -rf dist"
+        "clean": "forge clean && forge cache clean && rm -rf dist",
+        "deploylibrary": "forge create --revert-strings debug --contracts lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA",
+        "deploy": "forge script ./script/ClosedAgreement.s.sol --sig 'deploy()' --libraries lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify"
     },
     "repository": {
         "type": "git",

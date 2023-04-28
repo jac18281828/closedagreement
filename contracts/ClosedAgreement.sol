@@ -59,9 +59,11 @@ contract ClosedAgreement {
         if (msg.sender != agreement.agent && msg.sender != agreement.counterParty) revert NotParty(msg.sender);
 
         // check agreement alignment
-        bytes32 multipartyHash = keccak256(abi.encode(agreement.agent, agreement.counterParty, bytes(plainText).length, plainText));
+        bytes32 multipartyHash = keccak256(
+            abi.encode(agreement.agent, agreement.counterParty, bytes(plainText).length, plainText)
+        );
         bytes32 ethMsgHash = ECDSA.toEthSignedMessageHash(multipartyHash);
-        if (ethMsgHash != _agreementHash) revert AgreementNotMatched(multipartyHash);
+        if (ethMsgHash != _agreementHash) revert AgreementNotMatched(ethMsgHash);
 
         // overwrite and erase agreement
         agreementMap[_agreementHash] = Agreement(address(0x0), address(0x0), 0, "");
