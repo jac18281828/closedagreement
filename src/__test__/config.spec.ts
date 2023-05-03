@@ -9,11 +9,13 @@ describe("Config", () => {
         process.env = {
             ...env,
             SECRET_AGREEMENT: "agree",
-            AGENT_ADDRESS: "0x0000",
-            AGENT_PRIVATE_KEY: "12345",
+            PUBLIC_ADDRESS: "0x0000",
+            PRIVATE_KEY: "12345",
             COUNTER_PARTY_ADDRESS: "0x0001",
             COUNTER_PARTY_PRIVATE_KEY: "12346",
             RPC_URL: "https://eth.net.com/rpc",
+            ABI_PATH: "./abi",
+            CONTRACT_ADDRESS: "0xabcdef",
         };
         config = new Config();
     });
@@ -36,7 +38,7 @@ describe("Config", () => {
     });
 
     it("must require agent address", () => {
-        process.env.AGENT_ADDRESS = "";
+        process.env.PUBLIC_ADDRESS = "";
         expect(() => new Config()).toThrow();
     });
 
@@ -45,7 +47,7 @@ describe("Config", () => {
     });
 
     it("must require agent private key", () => {
-        process.env.AGENT_PRIVATE_KEY = "";
+        process.env.PRIVATE_KEY = "";
         expect(() => new Config()).toThrow();
     });
 
@@ -58,12 +60,12 @@ describe("Config", () => {
         expect(() => new Config()).toThrow();
     });
 
-    it('must load counter key', () => {
-        expect(config.counterPrivateKey).toBe('12346');
+    it("must load counter key", () => {
+        expect(config.counterPrivateKey).toBe("12346");
     });
 
-    it('must require counter private key', () => {
-        process.env.COUNTER_PARTY_PRIVATE_KEY = '';
+    it("must require counter private key", () => {
+        process.env.COUNTER_PARTY_PRIVATE_KEY = "";
         expect(() => new Config()).toThrow();
     });
 
@@ -73,6 +75,24 @@ describe("Config", () => {
 
     it("must require rpc url", () => {
         process.env.RPC_URL = "";
+        expect(() => new Config()).toThrow();
+    });
+
+    it("must load abiPath", () => {
+        expect(config.abiPath).toBe("./abi");
+    });
+
+    it("must require abiPath", () => {
+        process.env.ABI_PATH = "";
+        expect(() => new Config()).toThrow();
+    });
+
+    it("must load contractAddress", () => {
+        expect(config.contractAddress).toBe("0xabcdef");
+    });
+
+    it("must require contractAddress", () => {
+        process.env.CONTRACT_ADDRESS = "";
         expect(() => new Config()).toThrow();
     });
 });

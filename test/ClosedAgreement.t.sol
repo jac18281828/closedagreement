@@ -9,7 +9,6 @@ import { ClosedAgreement } from "../contracts/ClosedAgreement.sol";
 
 contract ClosedAgreementTest is Test {
     string public constant AGREEMENT = "daccord";
-    bytes public constant CIPHER = bytes(AGREEMENT);
     bytes32 public constant MSG_HASH = hex"6ccef4a336990d1c3c52b7a0624d811b7eddecb4825e3ec9ce7ae57f4fa2d9c7";
     address public constant AGENT_ADDRESS = address(0x6CEb0bF1f28ca4165d5C0A04f61DC733987eD6ad);
     bytes public constant AGENT_SIGNATURE =
@@ -36,15 +35,15 @@ contract ClosedAgreementTest is Test {
 
     function testAgreementCreation() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
     }
 
     function testDuplicateAgreementForbidden() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.AgreementExists.selector, MSG_HASH));
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
     }
 
     function testAgentSignatureFails() public {
@@ -52,7 +51,7 @@ contract ClosedAgreementTest is Test {
             abi.encodeWithSelector(ClosedAgreement.SignatureVerificationFailed.selector, address(0x1234), AGENT_ADDRESS)
         );
         vm.prank(address(0x1234));
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
     }
 
     function testCounterSignatureFails() public {
@@ -60,33 +59,26 @@ contract ClosedAgreementTest is Test {
             abi.encodeWithSelector(ClosedAgreement.SignatureVerificationFailed.selector, address(0x1234), COUNTER_ADDRESS)
         );
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, address(0x1234), CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
-    }
-
-    function testCipher() public {
-        vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
-        bytes memory cipherText = agreement.getCipher(MSG_HASH);
-        assertEq(CIPHER, cipherText);
+        agreement.createAgreement(MSG_HASH, address(0x1234), AGENT_SIGNATURE, COUNTER_SIGNATURE);
     }
 
     function testAgreementReveal() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         vm.prank(AGENT_ADDRESS);
         agreement.reveal(MSG_HASH, AGREEMENT);
     }
 
     function testCounterAgreementReveal() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         vm.prank(COUNTER_ADDRESS);
         agreement.reveal(MSG_HASH, AGREEMENT);
     }
 
     function testBadGuyMayNotReveal() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.NotParty.selector, address(0x1234)));
         vm.prank(address(0x1234));
         agreement.reveal(MSG_HASH, AGREEMENT);
@@ -100,7 +92,7 @@ contract ClosedAgreementTest is Test {
 
     function testAgreementDeleted() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         vm.prank(AGENT_ADDRESS);
         agreement.reveal(MSG_HASH, AGREEMENT);
         vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.NoSuchAgreement.selector, MSG_HASH));
@@ -110,9 +102,9 @@ contract ClosedAgreementTest is Test {
 
     function testAgreementRevealRequiresSecret() public {
         vm.prank(AGENT_ADDRESS);
-        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, CIPHER, AGENT_SIGNATURE, COUNTER_SIGNATURE);
+        agreement.createAgreement(MSG_HASH, COUNTER_ADDRESS, AGENT_SIGNATURE, COUNTER_SIGNATURE);
         bytes32 expectHash = hex"e5bf9942845d800c8614c38763506dfa649e5fdf1541ddafdfed8956d85f80a2";
-        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.AgreementNotMatched.selector, expectHash));
+        vm.expectRevert(abi.encodeWithSelector(ClosedAgreement.AgreementNotRevealed.selector, expectHash));
         vm.prank(COUNTER_ADDRESS);
         agreement.reveal(MSG_HASH, "Not the agreement");
     }

@@ -11,14 +11,15 @@
     },
     "scripts": {
         "create_agreement": "node dist/create_agreement.js",
+        "reveal": "node dist/reveal.js",
         "build": "tsc && forge build --sizes",
         "prettier:check": "prettier --check \"(contracts|test)/**.sol\"",
         "prettier:fix": "prettier --write \"(contracts|test)/**.sol\"",
         "hint": "solhint contracts/**/*.sol test/**/*.sol",
         "test": "jest && forge test -vvv",
         "clean": "forge clean && forge cache clean && rm -rf dist",
-        "deploylibrary": "forge create --revert-strings debug --contracts lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} ECDSA",
-        "deploy": "forge script ./script/ClosedAgreement.s.sol --sig 'deploy()' --libraries lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify"
+        "deploylibrary": "forge create --revert-strings debug --contracts lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify ECDSA",
+        "deploy": "CONSTANT_LIB_ADDRESS=0x18F3510E1a11C502781e5E8E1FD2365fAa789Bb2 && forge script ./script/ClosedAgreement.s.sol --sig 'deploy()' --libraries lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol:ECDSA:${CONSTANT_LIB_ADDRESS} --slow --broadcast --rpc-url ${RPC_URL} --private-key ${PRIVATE_KEY} --etherscan-api-key ${ETHERSCAN_API_KEY} --verify"
     },
     "repository": {
         "type": "git",
@@ -42,7 +43,8 @@
         "@types/node": "18.16.2",
         "dotenv": "16.0.3",
         "pino": "8.4.2",
-        "web3": "1.8.2"
+        "web3": "1.8.2",
+        "web3-eth-contract": "1.8.2"
     },
     "jest": {
         "moduleFileExtensions": [

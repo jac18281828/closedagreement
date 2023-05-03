@@ -9,7 +9,7 @@ contract CounterScript is Script {
 
     event ClosedAgreementCreated(address agreement);
 
-    function upgrade() public {
+    function deploy() public {
         vm.broadcast();
         ClosedAgreement agreement = new ClosedAgreement();
         emit ClosedAgreementCreated(address(agreement));

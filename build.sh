@@ -7,7 +7,7 @@ then
     VERSION=$RANDOM
 fi
 
-PROJECT=collectivexyz/$(basename ${PWD})
+PROJECT=jac18281828/$(basename ${PWD})
 
 docker build . -t ${PROJECT}:${VERSION} && \
     docker rmi ${PROJECT}:${VERSION}
