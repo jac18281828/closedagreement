@@ -1,6 +1,6 @@
 FROM ghcr.io/collectivexyz/foundry:latest
 
-ARG PROJECT=simpleproxy
+ARG PROJECT=closedagreement
 WORKDIR /workspaces/${PROJECT}
 RUN chown -R mr.mr .
 COPY --chown=mr:mr . .
