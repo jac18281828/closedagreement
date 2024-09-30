@@ -43,8 +43,8 @@
         "@types/node": "18.16.2",
         "dotenv": "16.0.3",
         "pino": "8.4.2",
-        "web3": "1.8.2",
-        "web3-eth-contract": "1.8.2"
+        "web3": "1.10.0",
+        "web3-eth-contract": "1.10.0"
     },
     "jest": {
         "moduleFileExtensions": [
